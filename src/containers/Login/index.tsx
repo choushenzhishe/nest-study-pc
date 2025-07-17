@@ -19,13 +19,15 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './index.module.scss'
 import { useMutation } from '@apollo/client';
-import { LOGIN, SEND_CODE_MESSAGE } from '../../graphql/auth';
+import { LOGIN, LOGIN_BY_ACCOUNT, SEND_CODE_MESSAGE } from '../../graphql/auth';
 
 type LoginType = 'phone' | 'account';
 
 interface IValues {
-  tel: string;
-  code: string;
+  tel?: string;
+  code?: string;
+  password?: string;
+  account?: string;
 }
 
 export default () => {
@@ -38,7 +40,8 @@ export default () => {
 
  const [run] =  useMutation(SEND_CODE_MESSAGE)
   const [login] = useMutation(LOGIN)
-  
+  const [loginByAccount] = useMutation(LOGIN_BY_ACCOUNT);
+
   const iconStyles: CSSProperties = {
     marginInlineStart: '16px',
     color: setAlpha(token.colorTextBase, 0.2),
@@ -47,7 +50,19 @@ export default () => {
     cursor: 'pointer',
   };
   const loginHandler = async (values: IValues) => {
-      const res = await login({ variables: values });
+    if (loginType === 'account') {
+      const { tel, code, ...sendData } = values;
+      const res = await loginByAccount({ variables: sendData });
+      if (res.data.loginByAccount.code === 200) {
+        messageApi.success(res.data.loginByAccount.message);
+        navigate('/');
+        return;
+      }
+      messageApi.error(res.data.loginByAccount.message || '登录失败');
+      throw new Error(res.data.loginByAccount.message || '登录失败');
+    } else {
+      const { account, password,...sendData } = values;
+  const res = await login({ variables: sendData });
       if (res.data.login.code === 200) {
         messageApi.success(res.data.login.message);
         navigate('/');
@@ -55,6 +70,8 @@ export default () => {
       }
       messageApi.error(res.data.login.message || '登录失败');
       throw new Error(res.data.login.message || '登录失败');
+    }
+     
 
   };
 
@@ -74,6 +91,7 @@ export default () => {
             onChange={(activeKey) => setLoginType(activeKey as LoginType)}
           >
             <Tabs.TabPane key={'phone'} tab={'手机号登录'} />
+            <Tabs.TabPane key={'account'} tab={'账号密码登录'} />
           </Tabs>
 
           {loginType === 'phone' && (
@@ -135,21 +153,55 @@ export default () => {
               />
             </>
           )}
+          {loginType === 'account' && (
+  <>
+    <ProFormText
+      fieldProps={{
+        size: 'large',
+        prefix: <MobileOutlined className={'prefixIcon'} />,
+      }}
+      name="account"
+      placeholder={'账号'}
+      rules={[
+        {
+          required: true,
+          message: '请输入账号！',
+        },
+      ]}
+    />
+    <ProFormText.Password
+      fieldProps={{
+        size: 'large',
+        prefix: <LockOutlined className={'prefixIcon'} />,
+      }}
+      name="password"
+      placeholder={'密码'}
+      rules={[
+        {
+          required: true,
+          message: '请输入密码！',
+        },
+      ]}
+    />
+  </>
+)}
+
           <div
             style={{
-              marginBlockEnd: 24,
+              marginBlockEnd: 12,
             }}
           >
             <ProFormCheckbox noStyle name="autoLogin">
               自动登录
             </ProFormCheckbox>
-            <a
-              style={{
-                float: 'right',
-              }}
-            >
+          <div style={{ float: 'right' }}>
+            <a style={{ marginRight: 16 }} onClick={() => navigate('/register')}>
+              注册
+            </a>
+            <a>
               忘记密码
             </a>
+  </div>
           </div>
         </LoginForm>
       </div>

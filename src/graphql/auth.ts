@@ -15,3 +15,19 @@ mutation login($tel:String!, $code:String!) {
     message
   }
 }`
+
+export const REGISTER = gql`
+    mutation createUserByPassword($params: StudentInput!) {
+        createUserByPassword(params: $params) {
+            code
+            message
+        }
+}`
+
+export const LOGIN_BY_ACCOUNT = gql`
+mutation loginByAccount($account:String!,$password:String!) {
+  loginByAccount(account:$account,password:$password) {
+    code
+    message
+  }
+}`
