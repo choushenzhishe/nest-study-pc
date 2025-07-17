@@ -13,17 +13,32 @@ import {
   ProFormText,
   setAlpha,
 } from '@ant-design/pro-components';
-import { Space, Tabs, message, theme } from 'antd';
+import { Space, Tabs, message, theme, Form } from 'antd';
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './index.module.scss'
+import { useMutation } from '@apollo/client';
+import { LOGIN, SEND_CODE_MESSAGE } from '../../graphql/auth';
 
 type LoginType = 'phone' | 'account';
+
+interface IValues {
+  tel: string;
+  code: string;
+}
 
 export default () => {
   const { token } = theme.useToken();
   const [loginType, setLoginType] = useState<LoginType>('phone');
+  const [form] = Form.useForm();
+  const navigate = useNavigate();
 
+    const [messageApi,contextHolder] = message.useMessage();
+
+ const [run] =  useMutation(SEND_CODE_MESSAGE)
+  const [login] = useMutation(LOGIN)
+  
   const iconStyles: CSSProperties = {
     marginInlineStart: '16px',
     color: setAlpha(token.colorTextBase, 0.2),
@@ -31,12 +46,27 @@ export default () => {
     verticalAlign: 'middle',
     cursor: 'pointer',
   };
+  const loginHandler = async (values: IValues) => {
+      const res = await login({ variables: values });
+      if (res.data.login.code === 200) {
+        messageApi.success(res.data.login.message);
+        navigate('/');
+        return;
+      }
+      messageApi.error(res.data.login.message || '登录失败');
+      throw new Error(res.data.login.message || '登录失败');
+
+  };
+
 
   return (
     <ProConfigProvider hashed={false}>
+       {contextHolder}
       <div style={{ backgroundColor: token.colorBgContainer }}>
         <LoginForm
           logo="https://chou-nest-study.oss-cn-shenzhen.aliyuncs.com/user-dirhenglogo%402x.png"
+          form={form}
+          onFinish={loginHandler}
         >
           <Tabs
             centered
@@ -53,7 +83,7 @@ export default () => {
                   size: 'large',
                   prefix: <MobileOutlined className={'prefixIcon'} />,
                 }}
-                name="mobile"
+                name="tel"
                 placeholder={'手机号'}
                 rules={[
                   {
@@ -74,6 +104,7 @@ export default () => {
                 captchaProps={{
                   size: 'large',
                 }}
+                
                 placeholder={'请输入验证码'}
                 captchaTextRender={(timing, count) => {
                   if (timing) {
@@ -81,15 +112,25 @@ export default () => {
                   }
                   return '获取验证码';
                 }}
-                name="captcha"
+                phoneName="tel"
+                name="code"
                 rules={[
                   {
                     required: true,
                     message: '请输入验证码！',
                   },
                 ]}
-                onGetCaptcha={async () => {
-                  message.success('获取验证码成功！验证码为：1234');
+                onGetCaptcha={async (tel) => {
+                  console.log('🚀 ~ 手机号: ', tel);
+                  
+             
+                    const res = await run({ variables: { tel } });
+                    if (res?.data?.sendCodeMsg.code === 200) {
+                      messageApi.success(res.data?.sendCodeMsg.message);
+                    }
+                     else {
+                      messageApi.error(res?.data?.sendCodeMsg.message);
+                    }
                 }}
               />
             </>
