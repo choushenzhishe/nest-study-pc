@@ -21,6 +21,8 @@ import './index.module.scss'
 import { useMutation } from '@apollo/client';
 import { LOGIN, LOGIN_BY_ACCOUNT, SEND_CODE_MESSAGE } from '../../graphql/auth';
 import { AUTH_TOKEN } from '../../utils/constants';
+import { useTitle } from '../../hooks';
+import { useUserContext } from '../../utils/userHook';
 
 type LoginType = 'phone' | 'account';
 
@@ -34,9 +36,11 @@ interface IValues {
 
 export default () => {
   const { token } = theme.useToken();
+  useTitle('登录')
   const [loginType, setLoginType] = useState<LoginType>('phone');
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const {store} = useUserContext()
 
   const [params] =useSearchParams()
 
@@ -55,7 +59,7 @@ export default () => {
         if (values.autoLogin) {
             localStorage.setItem(AUTH_TOKEN, res.data.loginByAccount.data);
         }
-              sessionStorage.setItem(AUTH_TOKEN, res.data.login.data);
+        sessionStorage.setItem(AUTH_TOKEN, res.data.loginByAccount.data);
         navigate(params.get('orgPath')||'/');
         return;
       }
@@ -69,7 +73,7 @@ export default () => {
         if (values.autoLogin) {
             localStorage.setItem(AUTH_TOKEN, res.data.login.data);
         }
-           sessionStorage.setItem(AUTH_TOKEN, res.data.login.data);
+        sessionStorage.setItem(AUTH_TOKEN, res.data.login.data);
         navigate(params.get('orgPath')||'/');
         return;
       }

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import style from './index.module.scss';
 import { useMutation } from '@apollo/client';
 import { REGISTER } from '../../graphql/auth';
+import { useTitle } from '../../hooks';
 
 interface RegisterUser {
   username: string;
@@ -16,7 +17,7 @@ const Register = () => {
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
    const [register] = useMutation(REGISTER);
-    
+  useTitle('注册')
   const registerHandler = async (values: RegisterUser) => {
     if (values.password !== values.confirmPassword) {
       messageApi.error('两次密码输入不一致');
