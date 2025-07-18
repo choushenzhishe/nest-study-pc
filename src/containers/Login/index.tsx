@@ -16,7 +16,7 @@ import {
 import { Space, Tabs, message, theme, Form } from 'antd';
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import './index.module.scss'
 import { useMutation } from '@apollo/client';
 import { LOGIN, LOGIN_BY_ACCOUNT, SEND_CODE_MESSAGE } from '../../graphql/auth';
@@ -38,6 +38,8 @@ export default () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
+  const [params] =useSearchParams()
+
     const [messageApi,contextHolder] = message.useMessage();
 
  const [run] =  useMutation(SEND_CODE_MESSAGE)
@@ -53,8 +55,8 @@ export default () => {
         if (values.autoLogin) {
             localStorage.setItem(AUTH_TOKEN, res.data.loginByAccount.data);
         }
-      
-        navigate('/');
+              sessionStorage.setItem(AUTH_TOKEN, res.data.login.data);
+        navigate(params.get('orgPath')||'/');
         return;
       }
       messageApi.error(res.data.loginByAccount.message || '登录失败');
@@ -67,7 +69,8 @@ export default () => {
         if (values.autoLogin) {
             localStorage.setItem(AUTH_TOKEN, res.data.login.data);
         }
-        navigate('/');
+           sessionStorage.setItem(AUTH_TOKEN, res.data.login.data);
+        navigate(params.get('orgPath')||'/');
         return;
       }
       messageApi.error(res.data.login.message || '登录失败');
@@ -91,10 +94,11 @@ export default () => {
             centered
             activeKey={loginType}
             onChange={(activeKey) => setLoginType(activeKey as LoginType)}
-          >
-            <Tabs.TabPane key={'phone'} tab={'手机号登录'} />
-            <Tabs.TabPane key={'account'} tab={'账号密码登录'} />
-          </Tabs>
+            items={[
+              { key: 'phone', label: '手机号登录' },
+              { key: 'account', label: '账号密码登录' },
+            ]}
+          />
 
           {loginType === 'phone' && (
             <>
