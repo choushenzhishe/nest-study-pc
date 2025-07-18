@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import './index.module.scss'
 import { useMutation } from '@apollo/client';
 import { LOGIN, LOGIN_BY_ACCOUNT, SEND_CODE_MESSAGE } from '../../graphql/auth';
+import { AUTH_TOKEN } from '../../utils/constants';
 
 type LoginType = 'phone' | 'account';
 
@@ -28,6 +29,7 @@ interface IValues {
   code?: string;
   password?: string;
   account?: string;
+  autoLogin?: boolean;
 }
 
 export default () => {
@@ -42,29 +44,29 @@ export default () => {
   const [login] = useMutation(LOGIN)
   const [loginByAccount] = useMutation(LOGIN_BY_ACCOUNT);
 
-  const iconStyles: CSSProperties = {
-    marginInlineStart: '16px',
-    color: setAlpha(token.colorTextBase, 0.2),
-    fontSize: '24px',
-    verticalAlign: 'middle',
-    cursor: 'pointer',
-  };
   const loginHandler = async (values: IValues) => {
     if (loginType === 'account') {
-      const { tel, code, ...sendData } = values;
+      const { tel, code,autoLogin, ...sendData } = values;
       const res = await loginByAccount({ variables: sendData });
       if (res.data.loginByAccount.code === 200) {
         messageApi.success(res.data.loginByAccount.message);
+        if (values.autoLogin) {
+            localStorage.setItem(AUTH_TOKEN, res.data.loginByAccount.data);
+        }
+      
         navigate('/');
         return;
       }
       messageApi.error(res.data.loginByAccount.message || '登录失败');
       throw new Error(res.data.loginByAccount.message || '登录失败');
     } else {
-      const { account, password,...sendData } = values;
-  const res = await login({ variables: sendData });
+      const { account, password,autoLogin,...sendData } = values;
+       const res = await login({ variables: sendData });
       if (res.data.login.code === 200) {
         messageApi.success(res.data.login.message);
+        if (values.autoLogin) {
+            localStorage.setItem(AUTH_TOKEN, res.data.login.data);
+        }
         navigate('/');
         return;
       }

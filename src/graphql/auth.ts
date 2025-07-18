@@ -13,6 +13,7 @@ mutation login($tel:String!, $code:String!) {
   login(tel: $tel, code: $code) {
     code
     message
+    data
   }
 }`
 
@@ -29,5 +30,6 @@ mutation loginByAccount($account:String!,$password:String!) {
   loginByAccount(account:$account,password:$password) {
     code
     message
+    data
   }
 }`
