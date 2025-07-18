@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.tsx';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ROUTE_CONFIG } from './routes';
+import { ROUTE_CONFIG, routes } from './routes';
 import { ApolloProvider } from '@apollo/client';
 import { client } from './utils/apollo.ts';
 import UserInfo from './containers/components/UserInfo/index.tsx';
@@ -20,11 +20,11 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/" element={<Layout />}>
-              {ROUTE_CONFIG.map((item) => (
+              {routes.map((item) => (
                 <Route
                   path={item.path}
                   key={item.key}
-                  element={<item.element />}
+                  element={item.element()}
                 />
               ))}
             </Route>

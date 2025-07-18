@@ -8,7 +8,7 @@ import {
 } from '@ant-design/pro-components';
 import { Link, useNavigate, useOutlet } from 'react-router-dom';
 import { useUserContext } from '../utils/userHook';
-import { ROUTE_CONFIG } from '../routes';
+import { ROUTE_CONFIG, routes } from '../routes';
 import { AUTH_TOKEN } from '../utils/constants';
 
 const menuItemRender = (item: MenuDataItem, dom: React.ReactNode) => {
@@ -38,7 +38,7 @@ const Layout = () => {
       }}
       logo={<img src="@/assets/react.svg" />}
       title={false}
-      route={{ path: '/', routes: ROUTE_CONFIG }}
+      route={{ path: '/', routes }}
       siderWidth={130}
       menuItemRender={menuItemRender}
       onMenuHeaderClick={() => navigate('/')}

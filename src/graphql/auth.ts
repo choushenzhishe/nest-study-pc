@@ -13,14 +13,14 @@ export const LOGIN = gql`
   mutation login($tel: String!, $code: String!) {
     login(tel: $tel, code: $code) {
       code
-      message
+      messagef
       data
     }
   }
 `;
 
 export const REGISTER = gql`
-  mutation createUserByPassword($params: UserInput!) {
+  mutation createUserByPassword($params: PasswordUserInput!) {
     createUserByPassword(params: $params) {
       code
       message
